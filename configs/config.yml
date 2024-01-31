@@ -1,0 +1,10 @@
+Port: "8080"
+
+MySQL:
+  Ip: "127.0.0.1"
+  Port: "3306"
+  User: "user"
+  Password: "123456"
+  Database: "GradingSystem"
+  Charset: "utf8mb4"
+  ParseTime: "True"
