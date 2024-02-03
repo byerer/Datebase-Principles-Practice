@@ -1,7 +1,7 @@
 package global
 
 import (
-	"GradingSystem/internal/model"
+	"GradingSystem/internal/model/database"
 	"GradingSystem/pkg/setting"
 	"fmt"
 	"gorm.io/driver/mysql"
@@ -35,7 +35,7 @@ func NewDBEngine(databaseSetting *setting.MySQLSettingS) (*gorm.DB, error) {
 	}
 
 	err = db.AutoMigrate(
-		model.User{},
+		database.User{},
 	)
 	return db, nil
 }

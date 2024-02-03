@@ -3,7 +3,8 @@ package router
 import (
 	"GradingSystem/global"
 	"GradingSystem/internal/middleware"
-	"GradingSystem/internal/model"
+	"GradingSystem/internal/model/api"
+	"GradingSystem/internal/model/database"
 	"fmt"
 	"github.com/bwmarrin/snowflake"
 	"github.com/gin-gonic/gin"
@@ -13,7 +14,7 @@ import (
 )
 
 func register(c *gin.Context) {
-	var user model.User
+	var user api.UserCreate
 	if err := c.BindJSON(&user); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -34,8 +35,12 @@ func register(c *gin.Context) {
 		return
 	}
 	id := node.Generate().Int64()
-	user.ID = id
-	result := global.DB.Create(&user)
+	var duser database.User
+	duser.ID = id
+	duser.Username = user.Username
+	duser.Password = user.Password
+	duser.Email = user.Email
+	result := global.DB.Create(&duser)
 	if result.Error != nil {
 		log.Println(result.Error)
 		return
@@ -46,12 +51,12 @@ func register(c *gin.Context) {
 }
 
 func login(c *gin.Context) {
-	var loginInfo model.User
+	var loginInfo api.User
 	if err := c.BindQuery(&loginInfo); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	var user model.User
+	var user database.User
 	fmt.Println(loginInfo.Username, loginInfo.Password)
 	result := global.DB.Where("username = ?", loginInfo.Username).First(&user)
 	if result.Error != nil {

@@ -9,3 +9,9 @@ docker-compose up -d
 ```bash
 docker-compose down
 ```
+
+
+# todo
+- gorm
+- zap
+- go-redis

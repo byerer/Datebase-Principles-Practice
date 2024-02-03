@@ -1,4 +1,4 @@
-package http
+package api
 
 type User struct {
 	Username string `json:"username" form:"username"`
