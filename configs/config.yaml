@@ -1,10 +1,24 @@
 Port: "8080"
 
+Server:
+  RunMode: debug
+  HttpPort: 8000
+  ReadTimeout: 60
+  WriteTimeout: 60
+
 MySQL:
-  Ip: "127.0.0.1"
+  IP: "mysql"
   Port: "3306"
-  User: "user"
+  User: "root"
   Password: "123456"
   Database: "GradingSystem"
-  Charset: "utf8mb4"
-  ParseTime: "True"
+
+Redis:
+  IP: "redis"
+  Port: "6379"
+
+SMTP:
+  Host: "smtp.qq.com"
+  Port: 465
+  User: "1930551858@qq.com"
+  Password: "kporpomwkyabdeda"

@@ -1,7 +1,8 @@
-package main
+package middleware
 
 import (
 	"GradingSystem/global"
+	"golang.org/x/exp/rand"
 	"gopkg.in/gomail.v2"
 )
 
@@ -21,6 +22,12 @@ func SendCode(email string, code string) error {
 }
 
 // GenerateCode 生成6位验证码
-func generateCode() (string error) {
-	
+func GenerateCode() string {
+	const number = "0123456789"
+	rand.Seed(1)
+	code := make([]byte, 6)
+	for i := range code {
+		code[i] = number[rand.Intn(len(number))]
+	}
+	return string(code)
 }

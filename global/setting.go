@@ -5,6 +5,8 @@ import (
 )
 
 var (
-	DatabaseSetting *setting.DatabaseSettingS
-	ServerSetting   *setting.ServerSettingS
+	MySQLSetting  *setting.MySQLSettingS
+	ServerSetting *setting.ServerSettingS
+	SMTPSetting   *setting.SMTPSettingS
+	RedisSetting  *setting.RedisSettingS
 )

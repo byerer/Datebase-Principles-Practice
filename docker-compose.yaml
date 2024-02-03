@@ -1,20 +1,11 @@
-version: '0.1'
+version: '3.8'
 services:
-  mysql:
-    image: mysql:latest
-    environment:
-      MYSQL_DATABASE: 'GradingSystem'
-      MYSQL_USER: 'user'
-      MYSQL_PASSWORD: '123456'
-      MYSQL_ROOT_PASSWORD: 'rootpassword'
-    ports:
-      - "3306:3306"
-    volumes:
-      - my-db:/var/lib/mysql
   app:
     build: .
     depends_on:
       - mysql
+    networks:
+      - mynet
     environment:
       DB_HOST: mysql
       DB_NAME: 'GradingSystem'
@@ -22,5 +13,36 @@ services:
       DB_PASSWORD: '123456'
     ports:
       - "8080:8080"
+    deploy:
+      restart_policy:
+        condition: on-failure
+  mysql:
+    image: mysql:latest
+    container_name: GS-mysql
+    environment:
+      MYSQL_DATABASE: 'GradingSystem'
+      MYSQL_ROOT_PASSWORD: '123456'
+      MYSQL_charset: 'utf8mb4'
+    ports:
+      - "3306:3306"
+    networks:
+      - mynet
+    volumes:
+      - my-db:/var/lib/mysql
+  redis:
+    image: redis:latest
+    container_name: GS-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - mynet
+    volumes:
+      - my-redis:/var/lib/redis
+
 volumes:
   my-db:
+  my-redis:
+
+networks:
+  mynet:
+    driver: bridge

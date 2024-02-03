@@ -1,4 +1,4 @@
-package jwt
+package middleware
 
 import (
 	"github.com/gin-gonic/gin"
@@ -18,7 +18,7 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
-func JWTAuthtication() gin.HandlerFunc {
+func JWTAuthentication() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		tokenString := c.GetHeader("Authorization")
 		if tokenString == "" {
@@ -38,7 +38,7 @@ func JWTAuthtication() gin.HandlerFunc {
 }
 
 // GenerateJWT 生成 JWT 字符串
-func generateJWT(userID int64) (string, error) {
+func GenerateJWT(userID int64) (string, error) {
 	claims := Claims{
 		userID: userID,
 		RegisteredClaims: jwt.RegisteredClaims{

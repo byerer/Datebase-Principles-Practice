@@ -11,19 +11,17 @@ import (
 )
 
 var (
-	DBEngine *gorm.DB
+	DB *gorm.DB
 )
 
-func NewDBEngine(databaseSetting *setting.DatabaseSettingS) (*gorm.DB, error) {
-	s := "%s:%s@tcp(%s:%s)/%s?charset=%s&parseTime=%t&loc=Local"
+func NewDBEngine(databaseSetting *setting.MySQLSettingS) (*gorm.DB, error) {
+	s := "%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local"
 	dsn := fmt.Sprintf(s,
 		databaseSetting.User,
 		databaseSetting.Password,
 		databaseSetting.IP,
 		databaseSetting.Port,
 		databaseSetting.Database,
-		databaseSetting.Charset,
-		databaseSetting.ParseTime,
 	)
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
 		NamingStrategy: schema.NamingStrategy{

@@ -16,14 +16,17 @@ COPY . .
 # 编译应用程序
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o myapp .
 
-# 使用 scratch 作为最终镜像
-FROM scratch
+
+FROM alpine:latest
+
+RUN apk --no-cache add ca-certificates
 
 # 将工作目录设置为 /
 WORKDIR /
 
 # 从构建器镜像中复制编译好的应用程序
 COPY --from=builder /app/myapp .
+COPY --from=builder /app/configs/config.yaml .
 
 # 暴露端口 8080
 EXPOSE 8080
