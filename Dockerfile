@@ -8,6 +8,7 @@ WORKDIR /app
 COPY go.mod go.sum ./
 
 # 下载所有依赖
+RUN go env -w GOPROXY=https://goproxy.cn,direct
 RUN go mod download
 
 # 复制源代码

@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"GradingSystem/global"
+	"GradingSystem/internal/dao/redis"
 	"golang.org/x/exp/rand"
 	"gopkg.in/gomail.v2"
 )
@@ -14,7 +15,7 @@ func SendCode(email string, code string) error {
 	m.SetBody("text/html", "Hello, your certification code is "+code)
 
 	d := gomail.NewDialer(global.SMTPSetting.Host, global.SMTPSetting.Port, global.SMTPSetting.User, global.SMTPSetting.Password)
-
+	redis.SetCode(email, code)
 	if err := d.DialAndSend(m); err != nil {
 		return err
 	}
@@ -30,4 +31,11 @@ func GenerateCode() string {
 		code[i] = number[rand.Intn(len(number))]
 	}
 	return string(code)
+}
+
+func ValidateCode(email string, code string) bool {
+	if redisCode, err := redis.GetCode(email); err != nil || redisCode != code {
+		return false
+	}
+	return true
 }

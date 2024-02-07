@@ -2,6 +2,7 @@ package router
 
 import (
 	"GradingSystem/global"
+	"GradingSystem/internal/dao/mysql"
 	"GradingSystem/internal/middleware"
 	"GradingSystem/internal/model/api"
 	"GradingSystem/internal/model/database"
@@ -14,20 +15,26 @@ import (
 )
 
 func register(c *gin.Context) {
-	var user api.UserCreate
-	if err := c.BindJSON(&user); err != nil {
+	var apiUser api.UserCreate
+	if err := c.BindJSON(&apiUser); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
+	// 验证验证码
+	if !middleware.ValidateCode(apiUser.Email, apiUser.Code) {
+		c.JSON(http.StatusOK, gin.H{"msg": "验证码错误"})
+		return
+	}
+
 	// 使用 bcrypt 对密码进行加密
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(apiUser.Password), bcrypt.DefaultCost)
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "无法加密密码"})
 		return
 	}
-	user.Password = string(hashedPassword)
+	apiUser.Password = string(hashedPassword)
 
 	node, err := snowflake.NewNode(1)
 	if err != nil {
@@ -37,12 +44,12 @@ func register(c *gin.Context) {
 	id := node.Generate().Int64()
 	var duser database.User
 	duser.ID = id
-	duser.Username = user.Username
-	duser.Password = user.Password
-	duser.Email = user.Email
-	result := global.DB.Create(&duser)
-	if result.Error != nil {
-		log.Println(result.Error)
+	duser.Username = apiUser.Username
+	duser.Password = apiUser.Password
+	duser.Email = apiUser.Email
+	err = mysql.InsertUser(duser)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"msg": "注册失败"})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{

@@ -12,3 +12,11 @@ func SetCode(email string, code string) error {
 	}
 	return nil
 }
+
+func GetCode(email string) (code string, err error) {
+	result := global.RedisClient.Get(global.Ctx, email)
+	if result.Err() != nil {
+		return "", result.Err()
+	}
+	return result.Val(), nil
+}
