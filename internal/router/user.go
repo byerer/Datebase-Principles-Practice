@@ -1,12 +1,10 @@
 package router
 
 import (
-	"GradingSystem/global"
 	"GradingSystem/internal/dao/mysql"
 	"GradingSystem/internal/middleware"
 	"GradingSystem/internal/model/api"
 	"GradingSystem/internal/model/database"
-	"fmt"
 	"github.com/bwmarrin/snowflake"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
@@ -20,10 +18,14 @@ func register(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
 	// 验证验证码
 	if !middleware.ValidateCode(apiUser.Email, apiUser.Code) {
 		c.JSON(http.StatusOK, gin.H{"msg": "验证码错误"})
+		return
+	}
+	// 验证用户名是否存在
+	if mysql.FindUserByName(apiUser.Username) {
+		c.JSON(http.StatusOK, gin.H{"msg": "用户名已存在"})
 		return
 	}
 
@@ -63,14 +65,11 @@ func login(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	var user database.User
-	fmt.Println(loginInfo.Username, loginInfo.Password)
-	result := global.DB.Where("username = ?", loginInfo.Username).First(&user)
-	if result.Error != nil {
+	user, err := mysql.GetUserByUsername(loginInfo.Username)
+	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"msg": "用户名或密码错误"})
 		return
 	}
-
 	// 使用 bcrypt.CompareHashAndPassword 比较提交的密码和数据库中的哈希
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(loginInfo.Password)); err != nil {
 		// 密码不匹配
