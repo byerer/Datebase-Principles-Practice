@@ -5,29 +5,29 @@ import (
 	"GradingSystem/internal/router"
 	"GradingSystem/pkg/setting"
 	"fmt"
-	"log"
 	"time"
 )
 
 func init() {
+	global.InitLogger()
+	defer global.SugarLogger.Sync()
 	err := setupSetting()
 	if err != nil {
-		log.Fatalf("init.setupSetting err: %v", err)
+		global.SugarLogger.Fatalf("init.setupSetting err: %v", err)
 	}
 	err = setupDBEngine()
 	if err != nil {
-		log.Fatalf("init.setupDBEngine err: %v", err)
+		global.SugarLogger.Fatalf("init.setupDBEngine err: %v", err)
 	}
 	err = setupSMTP()
 	if err != nil {
-		log.Fatalf("init.setupSMTP err: %v", err)
+		global.SugarLogger.Fatalf("init.setupSMTP err: %v", err)
 	}
 	err = setupRedis()
 	if err != nil {
-		log.Fatalf("init.setupRedis err: %v", err)
+		global.SugarLogger.Fatalf("init.setupRedis err: %v", err)
 	}
-
-	log.Println("init success")
+	global.SugarLogger.Info("init setting success")
 }
 
 func main() {

@@ -1,6 +1,7 @@
 package router
 
 import (
+	"GradingSystem/global"
 	"GradingSystem/internal/dao/mysql"
 	"GradingSystem/internal/middleware"
 	"GradingSystem/internal/model/api"
@@ -8,7 +9,6 @@ import (
 	"github.com/bwmarrin/snowflake"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
-	"log"
 	"net/http"
 )
 
@@ -32,7 +32,6 @@ func register(c *gin.Context) {
 	// 使用 bcrypt 对密码进行加密
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(apiUser.Password), bcrypt.DefaultCost)
 	if err != nil {
-		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "无法加密密码"})
 		return
 	}
@@ -40,7 +39,7 @@ func register(c *gin.Context) {
 
 	node, err := snowflake.NewNode(1)
 	if err != nil {
-		log.Println(err)
+		global.SugarLogger.Errorf("generate snowflake node failed: %v", err)
 		return
 	}
 	id := node.Generate().Int64()
