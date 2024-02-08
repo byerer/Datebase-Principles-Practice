@@ -16,6 +16,7 @@ func Run() {
 		})
 	})
 	r.POST("/register", register)
+	r.POST("/forgetPassword", forgetPassword)
 	r.GET("/login", login)
 	r.GET("/sendCode", sendCode)
 

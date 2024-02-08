@@ -13,29 +13,34 @@ import (
 )
 
 func register(c *gin.Context) {
-	var apiUser api.UserCreate
-	if err := c.BindJSON(&apiUser); err != nil {
+	var registerInfo api.RegisterInfo
+	if err := c.BindJSON(&registerInfo); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	global.SugarLogger.Infof("registerInfo: %v", registerInfo)
 	// 验证验证码
-	if !middleware.ValidateCode(apiUser.Email, apiUser.Code) {
+	if !middleware.ValidateCode(registerInfo.EmailInfo) {
 		c.JSON(http.StatusOK, gin.H{"msg": "验证码错误"})
 		return
 	}
+	// 验证邮箱是否存在
+	if mysql.FindUserByEmail(registerInfo.EmailInfo.Email) {
+		c.JSON(http.StatusOK, gin.H{"msg": "邮箱已存在"})
+		return
+	}
 	// 验证用户名是否存在
-	if mysql.FindUserByName(apiUser.Username) {
+	if mysql.FindUserByName(registerInfo.User.Username) {
 		c.JSON(http.StatusOK, gin.H{"msg": "用户名已存在"})
 		return
 	}
 
 	// 使用 bcrypt 对密码进行加密
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(apiUser.Password), bcrypt.DefaultCost)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(registerInfo.User.Password), bcrypt.DefaultCost)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "无法加密密码"})
 		return
 	}
-	apiUser.Password = string(hashedPassword)
 
 	node, err := snowflake.NewNode(1)
 	if err != nil {
@@ -45,9 +50,9 @@ func register(c *gin.Context) {
 	id := node.Generate().Int64()
 	var duser database.User
 	duser.ID = id
-	duser.Username = apiUser.Username
-	duser.Password = apiUser.Password
-	duser.Email = apiUser.Email
+	duser.Username = registerInfo.User.Username
+	duser.Password = string(hashedPassword)
+	duser.Email = registerInfo.EmailInfo.Email
 	err = mysql.InsertUser(duser)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"msg": "注册失败"})
@@ -87,6 +92,36 @@ func login(c *gin.Context) {
 	})
 }
 
+func forgetPassword(c *gin.Context) {
+	var forgetPasswordInfo api.ForgetPasswordInfo
+	if err := c.BindJSON(&forgetPasswordInfo); err != nil {
+		global.SugarLogger.Infof("forgetPasswordInfo: %v", forgetPasswordInfo)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	_, err := mysql.GetUserByEmail(forgetPasswordInfo.EmailInfo.Email)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"msg": "用户不存在"})
+		return
+	}
+	// 验证验证码
+	if !middleware.ValidateCode(forgetPasswordInfo.EmailInfo) {
+		c.JSON(http.StatusOK, gin.H{"msg": "验证码错误"})
+		return
+	}
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(forgetPasswordInfo.Password), bcrypt.DefaultCost)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"msg": "无法加密密码"})
+		return
+	}
+	err = mysql.UpdatePassword(forgetPasswordInfo.EmailInfo.Email, string(hashedPassword))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"msg": "修改失败"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"msg": "修改成功"})
+}
+
 func sendCode(c *gin.Context) {
 	email := c.Query("email")
 	code := middleware.GenerateCode()
@@ -95,5 +130,8 @@ func sendCode(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"msg": "发送失败"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"msg": "发送成功"})
+	c.JSON(http.StatusOK, gin.H{
+		"msg":  "发送成功",
+		"code": code,
+	})
 }
