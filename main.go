@@ -5,7 +5,6 @@ import (
 	"GradingSystem/internal/router"
 	"GradingSystem/pkg/setting"
 	"fmt"
-	"time"
 )
 
 func init() {
@@ -40,10 +39,6 @@ func setupSetting() error {
 		return err
 	}
 
-	err = setting.ReadSection("Server", &global.ServerSetting)
-	if err != nil {
-		return err
-	}
 	err = setting.ReadSection("MySQL", &global.MySQLSetting)
 	if err != nil {
 		return err
@@ -53,8 +48,6 @@ func setupSetting() error {
 		return err
 	}
 
-	global.ServerSetting.ReadTimeout *= time.Second
-	global.ServerSetting.WriteTimeout *= time.Second
 	return nil
 }
 

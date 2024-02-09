@@ -1,14 +1,5 @@
 package setting
 
-import "time"
-
-type ServerSettingS struct {
-	RunMode      string
-	HttpPort     string
-	ReadTimeout  time.Duration
-	WriteTimeout time.Duration
-}
-
 type MySQLSettingS struct {
 	IP        string
 	Port      string
