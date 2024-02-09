@@ -1,20 +1,17 @@
 package middleware
 
 import (
+	"GradingSystem/global"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"net/http"
 	"time"
 )
 
-var jwtKey = []byte("your_secret_key")
-
-type Payload struct {
-	UserId uint `json:"user_id"`
-}
+var jwtKey = []byte("GradingSystem")
 
 type Claims struct {
-	userID int64
+	UserID int64 `json:"userID"`
 	jwt.RegisteredClaims
 }
 
@@ -27,12 +24,14 @@ func JWTAuthentication() gin.HandlerFunc {
 			return
 		}
 		claims, err := ParseToken(tokenString)
+		global.SugarLogger.Infof("claims: %v", claims)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"msg": "未登录"})
 			c.Abort()
 			return
 		}
-		c.Set("userID", claims.userID)
+		c.Set("userID", claims.UserID)
+		global.SugarLogger.Infof("UserID: %d", claims.UserID)
 		c.Next()
 	}
 }
@@ -40,7 +39,7 @@ func JWTAuthentication() gin.HandlerFunc {
 // GenerateJWT 生成 JWT 字符串
 func GenerateJWT(userID int64) (string, error) {
 	claims := Claims{
-		userID: userID,
+		UserID: userID,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(1 * time.Hour)),
 			Issuer:    "GradingSystem",

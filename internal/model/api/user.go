@@ -19,3 +19,8 @@ type ForgetPasswordInfo struct {
 	EmailInfo EmailInfo
 	Password  string `json:"password"`
 }
+
+type ModifyPasswordInfo struct {
+	Password    string `json:"password"`
+	NewPassword string `json:"newPassword"`
+}

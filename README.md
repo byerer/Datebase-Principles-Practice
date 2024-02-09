@@ -14,7 +14,7 @@ docker-compose down
 # todo
 ## 结构
 - 错误处理
-- serverSetting
+
 ## 接口
 - 修改密码
 

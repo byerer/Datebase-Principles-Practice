@@ -114,7 +114,40 @@ func forgetPassword(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"msg": "无法加密密码"})
 		return
 	}
-	err = mysql.UpdatePassword(forgetPasswordInfo.EmailInfo.Email, string(hashedPassword))
+	err = mysql.UpdatePasswordByEmail(forgetPasswordInfo.EmailInfo.Email, string(hashedPassword))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"msg": "修改失败"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"msg": "修改成功"})
+}
+
+func modifyPassword(c *gin.Context) {
+	var modifyPasswordInfo api.ModifyPasswordInfo
+	if err := c.BindJSON(&modifyPasswordInfo); err != nil {
+		global.SugarLogger.Errorf("bind modifyPassword failed: %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	userID := c.GetInt64("userID")
+	global.SugarLogger.Errorf("userID: %d", userID)
+	user, err := mysql.GetUserByID(userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"msg": "用户不存在"})
+		return
+	}
+	// 使用 bcrypt.CompareHashAndPassword 比较提交的密码和数据库中的哈希
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(modifyPasswordInfo.Password)); err != nil {
+		// 密码不匹配
+		c.JSON(http.StatusOK, gin.H{"msg": "密码错误"})
+		return
+	}
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(modifyPasswordInfo.NewPassword), bcrypt.DefaultCost)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"msg": "无法加密密码"})
+		return
+	}
+	err = mysql.UpdatePasswordByID(userID, string(hashedPassword))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"msg": "修改失败"})
 		return

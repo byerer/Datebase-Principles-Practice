@@ -22,6 +22,7 @@ func Run() {
 
 	api := r.Group("/api", middleware.JWTAuthentication())
 	{
+		api.PUT("/modifyPassword", modifyPassword)
 		api.GET("/test", func(c *gin.Context) {
 			c.JSON(http.StatusOK, gin.H{
 				"message": "test",
