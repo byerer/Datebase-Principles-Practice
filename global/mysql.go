@@ -36,6 +36,9 @@ func NewDBEngine(databaseSetting *setting.MySQLSettingS) (*gorm.DB, error) {
 
 	err = db.AutoMigrate(
 		database.User{},
+		database.Teacher{},
+		database.Student{},
+		database.Essay{},
 	)
 	return db, nil
 }

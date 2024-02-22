@@ -18,6 +18,9 @@ docker-compose down
 ## 接口
 - 修改密码
 
+## 数据库
+- 外键
+
 # qustion
 多次使用请求体
 

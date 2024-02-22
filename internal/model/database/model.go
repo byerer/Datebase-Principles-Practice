@@ -1,6 +1,9 @@
 package database
 
-import "time"
+import (
+	"gorm.io/gorm"
+	"time"
+)
 
 type User struct {
 	ID        int64  `gorm:"primary_key"`
@@ -23,18 +26,28 @@ type Student struct {
 	StudentName string `gorm:"type:varchar(20);not null"`
 }
 
+type Class struct {
+	gorm.Model
+	ClassName string    `gorm:"type:varchar(20);not null"`
+	Teacher   Teacher   `gorm:"foreignKey:ClassID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
+	Student   []Student `gorm:"foreignKey:ClassID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
+}
+
 type Essay struct {
-	ID        int64  `gorm:"primary_key"`
-	TeacherID int64  `gorm:"not null"`
-	Topic     string `gorm:"type:text;not null"`
-	Kind      string `gorm:"type:varchar(20);not null"`
-	Standard  string `gorm:"type:text;not null"`
+	gorm.Model
+	TeacherID int64
+	Teacher   Teacher `gorm:"references:ID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"` // 外键 belongs to
+	Topic     string  `gorm:"type:text;not null"`
+	Kind      string  `gorm:"type:varchar(20);not null"`
+	Standard  string  `gorm:"type:text;not null"`
 }
 
 type StudentAnswer struct {
-	ID             int64 `gorm:"primary_key"`
-	StudentID      int64 `gorm:"not null"`
-	EssayID        int64 `gorm:"not null"`
+	gorm.Model
+	StudentID      int64
+	Student        Student `gorm:"references:ID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"` // 外键 belongs to
+	EssayID        int64
+	Essay          Essay `gorm:"references:ID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"` // 外键 belongs to
 	ReferenceScore int
 	Score          int
 	Answer         string
